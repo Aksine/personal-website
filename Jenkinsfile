@@ -20,7 +20,8 @@ podTemplate(label: 'pod-hugo-app', containers: [
  
             container('hugo') {
                 stage('Build Hugo Site') {
-                    sh ("hugo")
+                    sh ('mkdir -p /tmp/hugo_cache') // Create a writable cache directory
+                    sh ('hugo --cacheDir=/tmp/hugo_cache')
                 }
             }
     
