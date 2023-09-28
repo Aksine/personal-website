@@ -15,15 +15,13 @@ podTemplate(label: 'pod-hugo-app', containers: [
         def DOCKER_IMAGE_NAME = 'hugo-app'
         def K8S_DEPLOYMENT_NAME = 'hugo-app'
          // Make the workspace writable
-        options {
-            workspace([[$class: 'WritableWorkspace']])
-        }
+
         stage('Clone Hugo App Repository') {
             checkout scm
  
             container('hugo') {
                 stage('Build Hugo Site') {
-                    sh ("hugo")
+                    sh ("hugo  --cacheDir=/home/jenkins/agent/workspace/Hugo")
                 }
             }
     
