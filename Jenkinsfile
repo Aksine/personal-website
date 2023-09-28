@@ -1,7 +1,7 @@
 #!groovy​
 podTemplate(label: 'pod-hugo-app', containers: [
     containerTemplate(name: 'hugo', image: 'hugomods/hugo:latest', ttyEnabled: true, command: 'cat'),
-    containerTemplate(name: 'kubectl', image: 'd3fk/kubectl:latest', ttyEnabled: true, command: 'cat',
+    containerTemplate(name: 'helm', image: 'alpine/helm', ttyEnabled: true, command: 'cat',
         volumes: [secretVolume(secretName: 'kube-config', mountPath: '/root/.kube')]),
     containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat',
         envVars: [containerEnvVar(key: 'DOCKER_CONFIG', value: '/tmp/'),])],
@@ -36,7 +36,7 @@ podTemplate(label: 'pod-hugo-app', containers: [
 
            container('helm') {
                 stage('Deploy Helm Chart') {
-                    sh ("helm install hugo bjw-s-charts/app-template -f values.yaml --set image.tag=${env.BUILD_NUMBER} ")
+                    sh ("helm install hugo bjw-s-charts/app-template -f helm.yaml --set image.tag=${env.BUILD_NUMBER} ")
                 }
             }
         }

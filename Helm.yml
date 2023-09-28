@@ -1,0 +1,15 @@
+service:
+  main:
+    ports:
+      http:
+        port: 80
+ingress:
+  main:
+    enabled: true
+    #ingressClassName: external
+
+    hosts:
+      - host: blog.aksine.lcl
+        paths:
+          - path: /
+
