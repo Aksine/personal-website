@@ -21,9 +21,8 @@ podTemplate(label: 'pod-hugo-app', containers: [
  
             container('hugo') {
                 stage('Build Hugo Site') {
-                    sh "ls"
-                    sh "pwd"
-                    sh ("hugo  --cacheDir=/home/jenkins/agent/workspace/Hugo")
+                    sh ("mkdir -p ./cache")
+                    sh ("hugo  -s ./hugo-app/  -d ../public/ --cacheDir=./cache")
                 }
             }
     
