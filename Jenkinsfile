@@ -14,14 +14,16 @@ podTemplate(label: 'pod-hugo-app', containers: [
         def DOCKER_HUB_ACCOUNT = 'aksine'
         def DOCKER_IMAGE_NAME = 'hugo-app'
         def K8S_DEPLOYMENT_NAME = 'hugo-app'
-
+         // Make the workspace writable
+        options {
+            workspace([[$class: 'WritableWorkspace']])
+        }
         stage('Clone Hugo App Repository') {
             checkout scm
  
             container('hugo') {
                 stage('Build Hugo Site') {
-                    sh ('mkdir -p /tmp/hugo_cache') // Create a writable cache directory
-                    sh ('hugo --cacheDir=/tmp/hugo_cache')
+                    sh ("hugo")
                 }
             }
     
