@@ -5,7 +5,8 @@ podTemplate(label: 'pod-hugo-app', containers: [
         volumes: [secretVolume(secretName: 'kube-config', mountPath: '/root/.kube')]),
     containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat',
         envVars: [containerEnvVar(key: 'DOCKER_CONFIG', value: '/tmp/')],
-        volumeMounts: [hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false)])
+        volumes: [hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false)
+                  hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')])
 
                   
   ]) {
