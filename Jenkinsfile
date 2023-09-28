@@ -22,7 +22,7 @@ podTemplate(label: 'pod-hugo-app', containers: [
             container('hugo') {
                 stage('Build Hugo Site') {
                     sh ("mkdir -p ./cache")
-                    sh ("hugo  -s ./hugo-app/  -d ../public/ --cacheDir=./cache")
+                    sh ("hugo  -s ./hugo-app/  -d ../public/ --cacheDir=/home/jenkins/agent/workspace/Hugo/cache")
                 }
             }
     
