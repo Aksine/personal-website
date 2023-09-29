@@ -7,7 +7,6 @@
                 ],
                 volumes: [
                     hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false),
-                    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock', readOnly: false),
                     secretVolume(secretName: 'kube-config', mountPath: '/root/.kube'),
                     secretVolume(secretName: 'docker-config', mountPath: '/kaniko/.docker')
                 ]
@@ -44,7 +43,7 @@
                 stage('Deploy Helm Chart') {
                     sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
                     sh ("pwd")
-                    sh ("helm upgrade hugo bjw-s-charts/app-template -f Helm.yml --set \"image.tag=${env.BUILD_NUMBER}\" ")
+                    sh ("helm upgrade hugo bjw-s-charts/app-template -f Helm.yml --set-string image.tag=${env.BUILD_NUMBER} ")
                 }
             }
         }
