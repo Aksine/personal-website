@@ -44,7 +44,7 @@
                 stage('Deploy Helm Chart') {
                     sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
                     sh ("pwd")
-                    sh ("helm install hugo bjw-s-charts/app-template -f /home/jenkins/agent/workspace/Hugo/Helm.yaml --set image.tag=${env.BUILD_NUMBER} ")
+                    sh ("helm install hugo bjw-s-charts/app-template -f Helm.yml --set image.tag=${env.BUILD_NUMBER} ")
                 }
             }
         }
