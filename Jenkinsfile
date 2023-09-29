@@ -7,6 +7,7 @@
                 ],
                 volumes: [
                     hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false),
+                    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock', readOnly: false),
                     secretVolume(secretName: 'kube-config', mountPath: '/root/.kube'),
                     secretVolume(secretName: 'docker-config', mountPath: '/kaniko/.docker')
                 ]
