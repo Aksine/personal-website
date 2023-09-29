@@ -1,16 +1,16 @@
 #!groovy​
-podTemplate(label: 'pod-hugo-app', containers: [
-    containerTemplate(name: 'hugo', image: 'hugomods/hugo:latest', ttyEnabled: true, command: 'cat'),
-    containerTemplate(name: 'helm', image: 'alpine/helm', ttyEnabled: true, command: 'cat'),
-    containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat'),
-        envVars: [containerEnvVar(key: 'DOCKER_CONFIG', value: '/tmp/')] ],
-
-                  
-volumes: [
-    hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false),
-    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock', readOnly: false),
-    secretVolume(secretName: 'kube-config', mountPath: '/root/.kube')
-        ]) 
+     podTemplate(label: 'pod-hugo-app', containers: [
+                    containerTemplate(name: 'hugo', image: 'hugomods/hugo:latest', ttyEnabled: true, command: 'cat'),
+                    containerTemplate(name: 'helm', image: 'alpine/helm', ttyEnabled: true, command: 'cat'),
+                    containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat')
+                ],
+                volumes: [
+                    hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false),
+                    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock', readOnly: false),
+                    secretVolume(secretName: 'kube-config', mountPath: '/root/.kube')
+                ],
+                envVars: [containerEnvVar(key: 'DOCKER_CONFIG', value: '/tmp/')]
+                ) 
 {
 
     node('pod-hugo-app') {
