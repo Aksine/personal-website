@@ -3,7 +3,7 @@
                     containerTemplate(name: 'hugo', image: 'hugomods/hugo:latest', ttyEnabled: true, command: 'cat'),
                     containerTemplate(name: 'helm', image: 'alpine/helm', ttyEnabled: true, command: 'cat'),
                     containerTemplate(name: 'kaniko', image: 'gcr.io/kaniko-project/executor:debug-539ddefcae3fd6b411a95982a830d987f4214251', imagePullPolicy: 'Always', command: 'sleep', args: '9999999')
-], serviceAccount: 'jenkins-sa')
+
                 ],
                 volumes: [
                     hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false),
