@@ -2,13 +2,14 @@
      podTemplate(label: 'pod-hugo-app', containers: [
                     containerTemplate(name: 'hugo', image: 'hugomods/hugo:latest', ttyEnabled: true, command: 'cat'),
                     containerTemplate(name: 'helm', image: 'alpine/helm', ttyEnabled: true, command: 'cat'),
-                    containerTemplate(name: 'docker', image: 'docker', ttyEnabled: true, command: 'cat', privileged: true)
+                    containerTemplate(name: 'kaniko', image: 'gcr.io/kaniko-project/executor:debug-539ddefcae3fd6b411a95982a830d987f4214251', imagePullPolicy: 'Always', command: 'sleep', args: '9999999')
+], serviceAccount: 'jenkins-sa')
                 ],
                 volumes: [
                     hostPathVolume(hostPath: '/tmp', mountPath: '/tmp', readOnly: false),
-                    //hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock', readOnly: false),
+                    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock', readOnly: false),
                     secretVolume(secretName: 'kube-config', mountPath: '/root/.kube'),
-                    //secretVolume(secretName: 'docker-config', mountPath: '/root/.docker')
+                    secretVolume(secretName: 'docker-config', mountPath: '/kaniko/.docker')
                 ]
                 ) 
 {
@@ -33,12 +34,9 @@
             }
     
 
-            container('docker') {
+            container('kaniko') {
                 stage('Docker Build & Push Current & Latest Versions') {
-                    sh ("docker build --no-cache -t ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -f ${DOCKER_BUILD_CONTEXT}/Dockerfile ${DOCKER_BUILD_CONTEXT}")
-                    sh ("docker push ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}")
-                    sh ("docker tag ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest")
-                    sh ("docker push ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest")
+                    sh "/kaniko/executor -f `pwd`/Dockerfile -c `pwd` --cache=true --destination=${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
                 }
             }
 
