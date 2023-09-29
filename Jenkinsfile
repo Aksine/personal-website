@@ -43,7 +43,8 @@
            container('helm') {
                 stage('Deploy Helm Chart') {
                     sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
-                    sh ("helm install hugo bjw-s-charts/app-template -f Helm.yaml --set image.tag=${env.BUILD_NUMBER} ")
+                    sh ("pwd")
+                    sh ("helm install hugo bjw-s-charts/app-template -f /home/jenkins/agent/workspace/Hugo/Helm.yaml --set image.tag=${env.BUILD_NUMBER} ")
                 }
             }
         }
