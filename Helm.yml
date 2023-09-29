@@ -1,3 +1,5 @@
+image:
+  repository: aksine/hugo-app
 service:
   main:
     ports:
