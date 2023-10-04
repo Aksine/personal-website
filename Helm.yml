@@ -1,5 +1,10 @@
-image:
-  repository: aksine/hugo-app
+controllers:
+  main:
+    strategy: Recreate
+    containers:
+      main:
+        image:
+          repository: aksine/hugo-app
 service:
   main:
     ports:
@@ -9,11 +14,15 @@ ingress:
   main:
     enabled: true
     className: traefik-ext
-    annotations: 
-      kubernetes.io/ingress.class: traefik-ext
+
     hosts:
       - host: blog.aksine-am.com
         paths:
           - path: /
+            service:
+              name: main
+              port: http
     tls:
-      secretName: aksine-am-com-tls
+      - secretName: aksine-am-com-tls
+        hosts:
+          - blog.aksine-am.com
