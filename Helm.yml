@@ -8,10 +8,12 @@ service:
 ingress:
   main:
     enabled: true
-    #ingressClassName: external
-
+    className: traefik-ext
+    annotations: 
+      kubernetes.io/ingress.class: traefik-ext
     hosts:
-      - host: blog.aksine.lcl
+      - host: blog.aksine-am.com
         paths:
           - path: /
-
+    tls:
+      secretName: aksine-am-com-tls
