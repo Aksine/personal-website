@@ -44,7 +44,7 @@
                 stage('Deploy Helm Chart') {
                     sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
                     sh ("pwd")
-                    sh ("helm upgrade hugo bjw-s-charts/app-template -f Helm.yml --set-string image.tag=${env.BUILD_NUMBER} ")
+                    sh ("helm upgrade hugo bjw-s-charts/app-template -f Helm.yml --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER} ")
                 }
             }
         }
