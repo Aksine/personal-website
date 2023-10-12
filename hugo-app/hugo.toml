@@ -1,4 +1,26 @@
 baseURL = 'https://blog.aksine-am.com/'
 languageCode = 'en-us'
-title = 'My New Hugo Site'
+title = "Aksine's thoughts"
 theme = 'ananke'
+
+
+
+[menu]
+[[menu.main]]
+    name = 'Content'
+    pageRef = '/'
+    weight = 10
+[[menu.main]]
+    name = 'About'
+    pageRef = '/about'
+    weight = 20
+
+
+[[params.ananke_socials]]
+  name = "github"
+  url = "https://github.com/Aksine"
+
+[[params.ananke_socials]]
+  name = "linkedin"
+  url = "https://www.linkedin.com/in/arnold-miranda-74bb3813b/"
+
