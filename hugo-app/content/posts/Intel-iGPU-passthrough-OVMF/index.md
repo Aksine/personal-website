@@ -1,6 +1,6 @@
 +++
 title = 'Intel iGPU Passthrough for OVMF'
-date = 2023-10-13T01:54:10Z
+date = 2023-10-11T01:54:10Z
 
 +++
 
@@ -124,6 +124,10 @@ An explanation for the arguments for kernel cmd line
 **``intel_iommu=on``** enable IOMMU for Intel chipsets.
 
 **``intel_iommu=pt``** enables turns on IOMMU tagging only for devices configured for pass through, allowing the host to ignore it for local host-only devices (hereby improving performance in certain cases)
+
+**``intel_iommu=pt``**  stops the sysfb framebuffer from loading on the iGPU and free up the iGPU for a clean passthrough 
+
+**NOTE**: This means that you will not have console access to your machine.
 
 And then apply the changes to the GRUB configuration with the following commandline.
 ```
