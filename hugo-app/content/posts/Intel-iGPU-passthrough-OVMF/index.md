@@ -119,6 +119,7 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt"
 ```
 
 An explanation for the arguments for kernel cmd line
+
 **``intel_iommu=on``** enable IOMMU for Intel chipsets.
 
 **``intel_iommu=pt``** enables turns on IOMMU tagging only for devices configured for pass through, allowing the host to ignore it for local host-only devices (hereby improving performance in certain cases)
@@ -129,12 +130,20 @@ update-grub
 ```
 ### Blacklisting Intel kernel modules
 
-Add these lines to to mo blacklist the Intel i915 drivers from loading at **``/etc/modprobe.d/blacklist.conf``**
+Add these lines to blacklist the Intel i915 drivers from loading at **``/etc/modprobe.d/blacklist.conf``**
 
 ```
 blacklist snd_hda_intel
 blacklist snd_hda_codec_hdmi
 blacklist i915
+```
+### Enable VFIO kernel modules
+Add these lines to enable the VFIO modules at  **``/etc/modules``**
+```
+vfio
+vfio_iommu_type1
+vfio_pci
+vfio_virqfd
 ```
 
 ### Enable I/O interrupt remapping and ignore MSRs
@@ -170,11 +179,11 @@ And finally apply all the above changes by updating the initramfs and rebooting 
 update-initramfs -u
 ```
 
-### Proxmox Virtual machine configuration
+## Proxmox Virtual machine configuration
 
 
 
-## For Q35 virtual machines
+### For Q35 virtual machines
 
 
 Assuming you have moved the **``i915ovmf.rom``** to **``/usr/share/kvm``**  Then **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``** to a folder at **``/root/OVMF``**
@@ -215,7 +224,7 @@ virtio0: cephrbd-aus:vm-109-disk-0,cache=unsafe,iothread=1,size=32G
 
 ```
 
-## For i440fx virtual machines
+### For i440fx virtual machines
 
 
 Assuming you have moved the **``vbios_gvt_uefi.rom``** to **``/usr/share/kvm``**  Then from the custom compiled OVMF ,the files **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``** to a folder at **``/root/OVMF``**
@@ -297,14 +306,14 @@ pvedaemon restart
 A little explanation for QEMU arguments 
 
 
-- `-device vfio-pci,host=00:02.0,bus=pci.0,addr=0x2`: Passthrough the iGPU at PCI address 00:2.0 on PCI Bus 0 at Device 2 (just matching what a physical machine sees  )
+- `-device vfio-pci,host=00:02.0,bus=pci.0,addr=0x2` Passthrough the iGPU at PCI address 00:2.0 on PCI Bus 0 at Device 2 (just matching what a physical machine sees  )
 - `x-igd-opregion=on` It exposes opregion (VBT included) to guest driver so that the guest driver could parse display connector information from. This property is mandatory for the Windows VM to enable display output.
-- `x-igd-gms=1`This argument specifies sets a value multiplied by 32 as the amount of pre-allocated memory (in units of MB) to support IGD in VGA modes
-- `romfile=i915ovmf.rom`: Specifies a ROM file for the device, in this case we are using the i915ovmf.rom or vbios_gvt_uefi.rom that we accquired earlier.
+- `x-igd-gms=1` This argument specifies sets a value multiplied by 32 as the amount of pre-allocated memory (in units of MB) to support IGD in VGA modes
+- `romfile=i915ovmf.rom` Specifies a ROM file for the device, in this case we are using the i915ovmf.rom or vbios_gvt_uefi.rom that we accquired earlier.
 
-- `-drive 'if=pflash,unit=0,format ..... F/OVMF_VARS.fd' ` : This argument is how we passthrough the custom compiled OVMF image that we compiled ourselves for iGPU passthrough 
+- `-drive 'if=pflash,unit=0,format ..... F/OVMF_VARS.fd' `  This argument is how we passthrough the custom compiled OVMF image that we compiled ourselves for iGPU passthrough 
 
-### Configuration complete
+## Configuration complete
 
 That's about the configuration you should need for iGPU passthrough in Proxmox.
 
