@@ -1,6 +1,6 @@
 +++
 title = 'Intel iGPU Passthrough for OVMF'
-date = 2023-09-26T01:54:10Z
+date = 2023-10-13T01:54:10Z
 
 +++
 
@@ -28,7 +28,8 @@ This guide is mostly for Proxmox users and assumes that you have the following o
 
 There will be two parts to the guide, the first is preparing the necessary files ,then compiling your own version of OVMF with the Intel GOP (Graphics Output Protocol) driver and VBT (Video BIOS Tables) files. 
 
-The second part describes setting up Proxmox and the virtual machine configuration files
+The second part describes setting up Proxmox and the virtual machine configuration files and setting intel iGPU direct passthrough or GVT-D
+
 ## vBios ROM override
 
 ### Q35 virtual machines
@@ -330,5 +331,18 @@ Broadwell also has issues with kernels newer than 5.3 ,so downgrade the kernel.Y
 [https://github.com/torvalds/linux/commit/1f76249cc3bebd6642cb641a22fc2f302707bfbb](https://github.com/torvalds/linux/commit/1f76249cc3bebd6642cb641a22fc2f302707bfbb)
 
 
+## References and credits
+
+_shadow1_x from the VFIO Discord for helping me getting the q35 virtual machine working.
+
+https://github.com/Kethen/edk2-build-intel-gop
+
+https://github.com/patmagauran/i915ovmfPkg/wiki
+
+https://forum.proxmox.com/threads/igd-passthrough-and-hard-coded-pci-bridges.68285/
 
 
+
+https://wiki.archlinux.org/title/Intel_GVT-g
+
+https://eci.intel.com/docs/3.0/components/kvm-hypervisor.html
