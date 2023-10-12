@@ -116,7 +116,7 @@ vim /etc/default/grub
 Edit the following line: **``GRUB_CMDLINE_LINUX_DEFAULT=``** and add the following arguments 
 
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt initcall_blacklist=sysfb_init"
 ```
 
 An explanation for the arguments for kernel cmd line
@@ -125,7 +125,7 @@ An explanation for the arguments for kernel cmd line
 
 **``intel_iommu=pt``** enables turns on IOMMU tagging only for devices configured for pass through, allowing the host to ignore it for local host-only devices (hereby improving performance in certain cases)
 
-**``intel_iommu=pt``**  stops the sysfb framebuffer from loading on the iGPU and free up the iGPU for a clean passthrough 
+**``initcall_blacklist=sysfb_init``**  stops the sysfb framebuffer from loading on the iGPU and free up the iGPU for a clean passthrough 
 
 **NOTE**: This means that you will not have console access to your machine.
 
