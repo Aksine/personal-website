@@ -22,7 +22,7 @@ This guide is mostly for Proxmox users and assumes that you have the following o
 - Proxmox 7.X (I assume Proxmox 8.X should work ,but i have not tested it myself).
 - Access to your UEFI firmware blobs/updates .
 - For the guest operating systems, i've tested Windows 10 and Windows 11.
-- A linux environment with Podman where you can compile
+- A linux environment with Podman where you can compile a OVMF image.
 
 # Guide
 
@@ -42,9 +42,15 @@ Otherwise feel free to compile it yourself from the repository linked, i will no
 ### i440fx virtual machines
 For i440fx virtual machines ,download the following file from : [vbios_gvt_uefi.rom](https://web.archive.org/web/20201020144354/http://120.25.59.132:3000/vbios_gvt_uefi.rom) 
 
-## Extract and compile OVMF
+## Extract files and compile OVMF
 
-You can either choose to extract the files yourself from the BIOS files or download based on the architecture of your CPU it from here: https://winraid.level1techs.com/t/efi-lan-bios-intel-gopdriver-modules/33948/2
+You can either choose to extract the files yourself from the BIOS files 
+
+**OR**
+ 
+You can download **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** based on the architecture of your CPU it from here: https://winraid.level1techs.com/t/efi-lan-bios-intel-gopdriver-modules/33948/2
+
+If you download it, you can skip the extraction steps and proceed to compiling your custom OVMF files. 
 
 ### Extracting IntelGopDriver.efi and Vbt.bin from your bios:
 
@@ -106,42 +112,49 @@ bash build_ovmf.sh
 
 The built OVMF files can be found in **``edk2/Build/OvmfX64/DEBUG_GCC5/FV/``** directory,the files you are searching for are **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``**. Copy these files to your Proxmox host.
 
-### Enabling IOMMU in Linux
-Enable IOMMU by doing the following
+### Enabling IOMMU in Linux and Blacklisting PCI and Kernel modules
 
-Assuming that you are using Proxmox and not using ZFS on root. Edit the kernel cmdline at:
+Get the PCI Vendor/Device ids to be blacklisted with ``lspci``. Usually in my experience Intel iGPUs are always located at ``00:02.0``
+```
+lspci -n -s 00:02.0
+```
+For example 
+> ``00:02.0 0300: 8086:3e9b``
+
+**``8086:3e9b``** is the PCI id that we need and then we add to the cmdline in the following steps
+
+
+
+Edit the kernel cmdline at:
 ```
 vim /etc/default/grub
 ```
 Edit the following line: **``GRUB_CMDLINE_LINUX_DEFAULT=``** and add the following arguments 
 
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt initcall_blacklist=sysfb_init"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt initcall_blacklist=sysfb_init vfio-pci.ids=8086:3e9b modprobe.blacklist=i915 modprobe.blacklist=snd_hda_codec_hdmi modprobe.blacklist=snd_hda_intel"
 ```
 
-An explanation for the arguments for kernel cmd line
+An explanation for the arguments for kernel cmd line :
 
 **``intel_iommu=on``** enable IOMMU for Intel chipsets.
 
-**``intel_iommu=pt``** enables turns on IOMMU tagging only for devices configured for pass through, allowing the host to ignore it for local host-only devices (hereby improving performance in certain cases)
+**``intel_iommu=pt``** enables turns on IOMMU tagging only for devices configured for pass through, allowing the host to ignore it for local host-only devices (hereby improving performance in certain cases).
 
-**``initcall_blacklist=sysfb_init``**  stops the sysfb framebuffer from loading on the iGPU and free up the iGPU for a clean passthrough 
+**``initcall_blacklist=sysfb_init``**  stops the sysfb framebuffer from loading on the iGPU and free up the iGPU for a clean passthrough.
+
+**``vfio-pci.ids=8086:3e9b``**  specifying the PCI IDs of a device to be bound to the VFIO driver,in this case our iGPU.
+
+**``modprobe.blacklist=i915 modprobe.blacklist=snd_hda_codec_hdmi modprobe.blacklist=snd_hda_intel``**  these all blacklist prevent these kernel modules from loading and making sure the iGPU is not bound.
 
 **NOTE**: This means that you will not have console access to your machine.
+
 
 And then apply the changes to the GRUB configuration with the following commandline.
 ```
 update-grub
 ```
-### Blacklisting Intel kernel modules
 
-Add these lines to blacklist the Intel i915 drivers from loading at **``/etc/modprobe.d/blacklist.conf``**
-
-```
-blacklist snd_hda_intel
-blacklist snd_hda_codec_hdmi
-blacklist i915
-```
 ### Enable VFIO kernel modules
 Add these lines to enable the VFIO modules at  **``/etc/modules``**
 ```
@@ -161,21 +174,7 @@ echo "options kvm ignore_msrs=1" > /etc/modprobe.d/kvm.conf
 ```
 
 
-### Blacklisting the PCI devices
 
-Get the PCI Vendor/Device ids to be blacklisted with ``lspci``. Usually in my experience Intel iGPUs are always located at ``00:02.0``
-```
-lspci -n -s 00:02.0
-```
-For example 
-> ``00:02.0 0300: 8086:3e9b``
-
-**``8086:3e9b``** is the PCI id that we need and then we add to the line below and 
-
-
-```
-echo "options vfio-pci ids=<PCI_ID> "> /etc/modprobe.d/vfio.conf
-```
 
 ### Update initramfs and reboot
 
@@ -334,10 +333,249 @@ Broadwell also has issues with kernels newer than 5.3 ,so downgrade the kernel.Y
 
 [https://github.com/torvalds/linux/commit/1f76249cc3bebd6642cb641a22fc2f302707bfbb](https://github.com/torvalds/linux/commit/1f76249cc3bebd6642cb641a22fc2f302707bfbb)
 
+### Misc Libvirt config
+
+Here is a sample libvirt config provided by _shadow1_x
+
+```
+<domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
+  <name>name</name>
+  <uuid>637b8ef3-14f9-4096-bb85-dfae62089c4f</uuid>
+  <metadata>
+    <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
+      <libosinfo:os id="http://microsoft.com/win/11"/>
+    </libosinfo:libosinfo>
+  </metadata>
+  <memory unit="KiB">15360000</memory>
+  <currentMemory unit="KiB">15360000</currentMemory>
+  <vcpu placement="static">8</vcpu>
+  <iothreads>1</iothreads>
+  <cputune>
+    <vcpupin vcpu="0" cpuset="0"/>
+    <vcpupin vcpu="1" cpuset="1"/>
+    <vcpupin vcpu="2" cpuset="2"/>
+    <vcpupin vcpu="3" cpuset="3"/>
+    <vcpupin vcpu="4" cpuset="4"/>
+    <vcpupin vcpu="5" cpuset="5"/>
+    <vcpupin vcpu="6" cpuset="6"/>
+    <vcpupin vcpu="7" cpuset="7"/>
+    <emulatorpin cpuset="0,4"/>
+    <iothreadpin iothread="1" cpuset="0,4"/>
+  </cputune>
+  <os>
+    <type arch="x86_64" machine="pc-q35-6.2">hvm</type>
+    <loader readonly="yes" type="pflash">/home/user/VM/ovmf-pleasework/winoptimus/OVMF_CODE.fd</loader>
+    <nvram>home/user/VM/ovmf-pleasework/winoptimus/OVMF_VARS.fd</nvram>
+    <boot dev="hd"/>
+    <bootmenu enable="yes"/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <hyperv mode="custom">
+      <relaxed state="on"/>
+      <vapic state="on"/>
+      <spinlocks state="on" retries="8191"/>
+      <vpindex state="on"/>
+      <runtime state="on"/>
+      <synic state="on"/>
+      <stimer state="on"/>
+      <reset state="off"/>
+      <vendor_id state="on" value="whatever"/>
+      <frequencies state="on"/>
+      <reenlightenment state="off"/>
+      <tlbflush state="on"/>
+      <ipi state="on"/>
+      <evmcs state="off"/>
+    </hyperv>
+    <kvm>
+      <hidden state="off"/>
+    </kvm>
+    <ioapic driver="kvm"/>
+  </features>
+  <cpu mode="host-passthrough" check="none" migratable="on">
+    <topology sockets="1" dies="1" cores="4" threads="2"/>
+    <cache mode="passthrough"/>
+    <feature policy="require" name="topoext"/>
+  </cpu>
+  <clock offset="localtime">
+    <timer name="rtc" tickpolicy="catchup"/>
+    <timer name="pit" tickpolicy="delay"/>
+    <timer name="hpet" present="no"/>
+    <timer name="hypervclock" present="yes"/>
+    <timer name="tsc" present="yes" mode="native"/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <pm>
+    <suspend-to-mem enabled="no"/>
+    <suspend-to-disk enabled="no"/>
+  </pm>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <disk type="file" device="disk">
+      <driver name="qemu" type="qcow2"/>
+      <source file="/var/lib/libvirt/images/arch.qcow2"/>
+      <target dev="vda" bus="virtio"/>
+      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+    </disk>
+    <disk type="file" device="disk">
+      <driver name="qemu" type="raw"/>
+      <source file="/var/lib/libvirt/images/windows.img"/>
+      <target dev="vdb" bus="virtio"/>
+      <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
+    </disk>
+    <disk type="file" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source file="/home/user/Downloads/archlinux-2023.08.01-x86_64.iso"/>
+      <target dev="sda" bus="sata"/>
+      <readonly/>
+      <address type="drive" controller="0" bus="0" target="0" unit="0"/>
+    </disk>
+    <controller type="usb" index="0" model="qemu-xhci" ports="15">
+      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
+    </controller>
+    <controller type="sata" index="0">
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
+    </controller>
+    <controller type="pci" index="0" model="pcie-root"/>
+    <controller type="pci" index="1" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="1" port="0x8"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x0" multifunction="on"/>
+    </controller>
+    <controller type="pci" index="2" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="2" port="0x9"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"/>
+    </controller>
+    <controller type="pci" index="3" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="3" port="0xa"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x2"/>
+    </controller>
+    <controller type="pci" index="4" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="4" port="0xb"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x3"/>
+    </controller>
+    <controller type="pci" index="5" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="5" port="0xc"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x4"/>
+    </controller>
+    <controller type="pci" index="6" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="6" port="0xd"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x5"/>
+    </controller>
+    <controller type="pci" index="7" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="7" port="0xe"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x6"/>
+    </controller>
+    <controller type="pci" index="8" model="pcie-root-port">
+      <model name="pcie-root-port"/>
+      <target chassis="8" port="0xf"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x7"/>
+    </controller>
+    <controller type="pci" index="9" model="pcie-to-pci-bridge">
+      <model name="pcie-pci-bridge"/>
+      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
+    </controller>
+    <interface type="network">
+      <mac address="52:54:00:a8:ae:39"/>
+      <source network="networkhostonly"/>
+      <model type="virtio"/>
+      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
+    </interface>
+    <input type="mouse" bus="ps2"/>
+    <input type="keyboard" bus="ps2"/>
+    <graphics type="spice" port="-1" autoport="no">
+      <listen type="address"/>
+      <image compression="off"/>
+      <gl enable="no"/>
+    </graphics>
+    <audio id="1" type="spice"/>
+    <video>
+      <model type="none"/>
+    </video>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
+      </source>
+      <rom bar="on"/>
+      <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0" multifunction="on"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x01" slot="0x00" function="0x1"/>
+      </source>
+      <rom bar="on"/>
+      <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x1"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x00" slot="0x02" function="0x0"/>
+      </source>
+      <rom file="/home/user/VM/working-efi/i915ovmfDMVT.rom"/>
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x00" slot="0x14" function="0x0"/>
+      </source>
+      <address type="pci" domain="0x0000" bus="0x09" slot="0x02" function="0x0"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x00" slot="0x1f" function="0x3"/>
+      </source>
+      <address type="pci" domain="0x0000" bus="0x09" slot="0x01" function="0x0"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x00" slot="0x17" function="0x0"/>
+      </source>
+      <address type="pci" domain="0x0000" bus="0x09" slot="0x03" function="0x0"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+      </source>
+      <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
+    </hostdev>
+    <memballoon model="none"/>
+  </devices>
+  <qemu:commandline>
+    <qemu:arg value="-fw_cfg"/>
+    <qemu:arg value="name=etc/igd-bdsm-size,file=/home/user/VM/ovmf-pleasework/i915OVMF/bdsmSize.bin"/>
+    <qemu:arg value="-fw_cfg"/>
+    <qemu:arg value="name=etc/igd-opregion,file=/home/user/VM/ovmf-pleasework/i915OVMF/opregion.bin"/>
+    <qemu:arg value="-object"/>
+    <qemu:arg value="input-linux,id=keyb1,evdev=/dev/input/event3"/>
+  </qemu:commandline>
+  <qemu:override>
+    <qemu:device alias="hostdev0">
+      <qemu:frontend>
+        <qemu:property name="x-pci-sub-vendor-id" type="unsigned" value="4156"/>
+        <qemu:property name="x-pci-sub-device-id" type="unsigned" value="33679"/>
+      </qemu:frontend>
+    </qemu:device>
+    <qemu:device alias="hostdev2">
+      <qemu:frontend>
+        <qemu:property name="x-vga" type="bool" value="true"/>
+        <qemu:property name="driver" type="string" value="vfio-pci-nohotplug"/>
+      </qemu:frontend>
+    </qemu:device>
+  </qemu:override>
+</domain>
+```
 
 ## References and credits
 
-_shadow1_x from the VFIO Discord for helping me getting the q35 virtual machine working.
+_shadow1_x from the VFIO Discord for helping me getting the q35 virtual machine working and his sample Libvirt configuration
 
 https://github.com/Kethen/edk2-build-intel-gop
 
