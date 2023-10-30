@@ -43,7 +43,7 @@
             container('helm') {
                 stage('Check Helm Release') {
                     script {
-                        def releaseExists = sh(script: "helm list -q | grep -q '^hugo\\$'", returnStatus: true)
+                        def releaseExists = sh(script: 'helm list -q | grep -q "^hugo$"', returnStatus: true)
                         sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
                         if (releaseExists == 0) {
                             // Helm release exists, perform an upgrade
