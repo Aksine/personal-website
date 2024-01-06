@@ -22,6 +22,7 @@ ingress:
             service:
               name: main
               port: http
+              
       - host: blog.aksine.lcl
         paths:
           - path: /
