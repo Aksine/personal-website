@@ -55,7 +55,6 @@
                         sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
                         sh "helm upgrade hugo bjw-s-charts/app-template -i -f Helm.yml --kube-context aus --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
                  
-                        
                     }
             }
         
