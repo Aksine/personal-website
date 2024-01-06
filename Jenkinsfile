@@ -41,18 +41,33 @@
             }
 
             container('helm') {
-                stage('Check Helm Release') {
+                stage('Deploy Helm chart Aus-cluster') {
                     script {
                         def releaseExists = sh(script: 'helm list -q | grep -q "^hugo$"', returnStatus: true)
                         sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
                         if (releaseExists == 0) {
                             // Helm release exists, perform an upgrade
           
-                            sh "helm upgrade hugo bjw-s-charts/app-template -f Helm.yml --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
+                            sh "helm upgrade hugo bjw-s-charts/app-template -f Helm.yml --kube-context aus --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
                         } else {
                             // Helm release does not exist, perform an install
                         
-                            sh "helm install hugo bjw-s-charts/app-template -f Helm.yml --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
+                            sh "helm install hugo bjw-s-charts/app-template -f Helm.yml --kube-context aus --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
+                        }
+                        }
+                    }
+                        stage('Deploy Helm chart Doh-cluster') {
+                    script {
+                        def releaseExists = sh(script: 'helm list -q | grep -q "^hugo$"', returnStatus: true)
+                        sh ("helm repo add bjw-s-charts https://bjw-s.github.io/helm-charts/")
+                        if (releaseExists == 0) {
+                            // Helm release exists, perform an upgrade
+          
+                            sh "helm upgrade hugo bjw-s-charts/app-template -f Helm.yml --kube-context doh --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
+                        } else {
+                            // Helm release does not exist, perform an install
+                        
+                            sh "helm install hugo bjw-s-charts/app-template -f Helm.yml --kube-context doh --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
                         }
                         }
                     }

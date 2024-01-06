@@ -22,6 +22,12 @@ ingress:
             service:
               name: main
               port: http
+      - host: blog.aksine.lcl
+        paths:
+          - path: /
+            service:
+              name: main
+              port: http
     tls:
       - secretName: aksine-am-com-tls
         hosts:
