@@ -22,7 +22,13 @@ ingress:
             service:
               name: main
               port: http
-      - host: blog.aksine.lcl
+      - host: aus-blog.aksine.lcl
+        paths:
+          - path: /
+            service:
+              name: main
+              port: http
+      - host: doh-blog.aksine.lcl
         paths:
           - path: /
             service:
