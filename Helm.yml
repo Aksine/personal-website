@@ -7,6 +7,7 @@ controllers:
           repository: aksine/hugo-app
 service:
   main:
+    controller: main
     ports:
       http:
         port: 80
@@ -19,28 +20,31 @@ ingress:
       - host: blog.aksine-am.com
         paths:
           - path: /
+            pathType: Prefix
             service:
-              name: main
+              identifier: main
               port: http
-      - host: aksine-am.com
+      - host: www.aksine-am.com
         paths:
           - path: /
+            pathType: Prefix
             service:
-              name: main
+              identifier: main
               port: http
       - host: aus-blog.aksine.lcl
         paths:
           - path: /
             service:
-              name: main
+              identifier: main
               port: http
       - host: doh-blog.aksine.lcl
         paths:
           - path: /
             service:
-              name: main
+              identifier: main
               port: http
     tls:
       - secretName: aksine-am-com-tls
         hosts:
           - blog.aksine-am.com
+          - www.aksine-am.com
