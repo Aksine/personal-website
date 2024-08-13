@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Arnold Miranda</title>
+<meta content="noarchive, noimageindex" name="robots"/>
+<meta content="Arnold Miranda's Portfolio" name="description"/>
+<meta content="Arnold Miranda" name="author"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css?family=Cutive+Mono" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.7.7/jquery.fullPage.min.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/2.7.7/jquery.fullPage.min.js"></script>
+<script>
+			$.fn.extend({ animate: function (animationName) {
+				$(this).addClass("animated " + animationName).one("webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend", function () { $(this).removeClass("animated " + animationName); });
+			}});
+			$(document).ready(function () {
+				$("#onepage").fullpage({
+					menu: "#onenav",
+					scrollingSpeed: 400,
+					recordHistory: false,
+					controlArrows: (window.innerWidth >= 1000),
+					slidesNavigation: true,
+					onLeave: function (index, nextIndex, direction) {
+						if (index == 1 || nextIndex == 1)
+							$("#onenav").toggleClass("nav-bottom");
+						if (nextIndex == 2 && direction == "down")
+							$(".timeline-bubble").animate("fadeInRight");
+						if (nextIndex == 3 && direction == "down")
+							$(".skill").animate("zoomIn");
+					},
+					afterLoad: function (anchorLink, index) {
+						if (index == 4)
+							$(".fp-controlArrow.fp-next").animate("flash");
+					},
+				});
+			});
+		</script>
+</link></head>
+<body>
+	<nav class="nav nav-bottom" id="onenav">
+	<a data-menuanchor="about" href="#about">About</a>
+	<a data-menuanchor="skills" href="#skills">Skills</a>
+	<a data-menuanchor="projects" href="#projects">Projects</a>
+	<a data-menuanchor="contact" href="#contact">Contact</a>
+	</nav>
+<div id="onepage">
+<noscript>
+<style>
+					#section-noscript {
+						position: fixed;
+						top: 0px;
+						left: 0px;
+						margin: 0px;
+						width: 100%;
+						height: 100%;
+						z-index: 9999;
+						color: black;
+						background-color: white;
+					}
+				</style>
+<div id="section-noscript">
+<p>Please enable JavaScript.</p>
+</div>
+</noscript>
+<div class="section" data-anchor="home" id="section-1">
+	<h1>docker run hello-world</h1>
+	<h2>I'm Arnold, a passionate Cloud DevOps Engineer with a love for automation and infrastructure as code.</h2>
+
+</div>
+<div class="section" data-anchor="about" id="section-2">
+<p class="skill skill-level-4">Experience</p> 
+<div class="timeline">
+<div class="timeline-bubble">
+<img src="image/advatek-lighting-logo.png" width="250" height="50" alt="Advatek Logo">
+<h2>Software Engineer Intern at Advatek Lighting</h2>
+<p>December 2023 - August 2024</p>
+</div>
+<div class="timeline-bubble">
+<img src="image/RMIT_University_Logo.svg" width="140" height="50" alt="Advatek Logo">
+<h2>Master of Information Technology at RMIT University</h2>
+<p>March 2023 - December 2024</p>
+</div>
+<div class="timeline-bubble">
+<img src="image/Mannai Corp Logo.png" width="160" height="50" alt="Advatek Logo">
+<h2>IT Consultant - Infrastructure Solutions at Mannai Corporation ICT</h2>
+<p>February 2021 - March 2023</p>
+</div>
+</div>
+</div>
+<div class="section" data-anchor="skills" id="section-3">
+<div class="timeline">
+
+	<p class="skill skill-level-4">Skills</p> 
+    <div class="timeline-bubble">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg"  width="150" height="150" alt="AWS Logo">
+        <!-- <p class="skill skill-level-5">AWS</p> -->
+    </div>
+    <div class="timeline-bubble">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Docker_%28container_engine%29_logo.svg" width="400" height="100" alt="Docker Logo">
+        <!-- <p class="skill skill-level-4">Docker</p> -->
+    </div>
+    <div class="timeline-bubble">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/67/Kubernetes_logo.svg" width="400" height="50" alt="Kubernetes Logo">
+        <!-- <p class="skill skill-level-4">Kubernetes</p> -->
+    </div>
+    <div class="timeline-bubble">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Terraform_Logo.svg" width="300" alt="Terraform Logo">
+        <!-- <p class="skill skill-level-4">Terraform</p> -->
+    </div>
+    <div class="timeline-bubble">
+		
+        <img src="image/Python.svg"  width="300" alt="Python Logo">
+        <!-- <p class="skill skill-level-4">Python</p> -->
+    </div>
+	</div>
+
+</div>
+
+<div class="section" data-anchor="project" id="section-4">
+<div class="slide project" id="project-1">
+	
+<a href="https://github.com/Aksine/aus-k3s-manifests">
+<h3><span class="underlined-hover">Kubernetes Homelab Environment</span> <span class="fa fa-github"></span></h3>
+<p>Deployed Kubernetes cluster on Proxmox, running various containerized services. Integrated Ceph distributed storage and SMB for persistent data management. Configured Traefik for ingress control, Cloudflare for DNS, and Cert-Manager for SSL/TLS automation.</p>
+</a>
+</div>
+<div class="slide project" id="project-2">
+<a href="https://github.com/Aksine/hugo-blog">
+<h3><span class="underlined-hover">CI/CD Pipeline for Hugo Blog</span> <span class="fa fa-github"></span></h3>
+<p>Developed Jenkins pipeline for automated build and deployment of Hugo-based blog. Implemented secure Docker builds with Kaniko in Kubernetes environment. Orchestrated cluster deployments using Helm charts. Managed infrastructure as code for consistent, version-controlled deployments.</p>
+</a>
+</div>
+<div class="slide project" id="project-3">
+<h4>Find me on <a class="underlined" href="https://github.com/Aksine">GitHub</a>!</h4>
+</div>
+</div>
+<div class="section" data-anchor="contact" id="section-5">
+<h4>Contact me on <a class="underlined" href="https://linkedin.com/in/arnold-miranda">LinkedIn</a>!</h4>
+</div>
+<div class="section fp-auto-height" data-anchor="impressum" id="section-6">
+<p>Copyright © 2024, modified by Arnold Miranda. Based on original design by Patrick Mours.</p>
+</div>
+</div>
+</body>
+</html>

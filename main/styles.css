@@ -1,0 +1,214 @@
+/* General */
+
+html, body {
+	font: 300 1em "Network Sans", "Helvetica", sans-serif;
+	color: white;
+	text-align: center;
+	margin: 0px;
+}
+@media (max-width: 600px) {
+	body {
+		font-size: 11px;
+	}
+}
+@media (max-height: 400px) {
+	body {
+		font-size: 7px;
+	}
+}
+
+
+@font-face {
+    font-family: 'Network Sans';
+    src: url('./fonts/NETWORKSANS-2019-REGULAR.TTF') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+
+h1 {
+	font-size: 4em;
+	font-weight: 400;
+	font-family: "Cutive Mono";
+}
+@media (max-width: 1000px) {
+	h1 {
+		font-size: 2em;
+	}
+}
+h2 {
+	font-size: 1.5em;
+	font-weight: 400;
+}
+h3 {
+	font-size: 2em;
+	font-weight: 700;
+}
+h4 {
+	font-size: 2em;
+	font-weight: 300;
+}
+p {	
+	font-size: 1.2em;
+}
+a {
+	color: white;
+	text-decoration: none;
+}
+
+.underlined {
+	border-bottom: 1px solid white;
+}
+.underlined-hover:hover {
+	text-decoration: underline;
+}
+
+.section h1, .section h2, .section h3, .section h4, .section p {
+	padding-left: 1em;
+	padding-right: 1em;
+}
+
+/* Navigation */
+
+.nav {
+	position: absolute;
+	top: 2em;
+	left: 0;
+	width: 100%;
+	z-index: 10;
+	transition: all 0.4s ease; -webkit-transition: all 0.4s ease;
+}
+.nav a {
+	margin: 0.5em;
+}
+.nav a.active {
+	font-weight: 700;
+}
+
+.nav-bottom {
+	top: calc(100vh - 4em);
+}
+
+#fp-nav ul li a span, .fp-slidesNav ul li a span {
+	background-color: white;
+}
+
+/* Sections */
+
+#section-1 {
+	background-color: hwb(177 0% 54%);
+}
+#section-2 {
+	background-color: #E84A00;
+}
+#section-3 {
+    background-color: #60ada3;
+}
+#section-4 {
+	background-color: #600CE8;
+}
+#section-5 {
+	background-color: #0D8BFF;
+}
+#section-6 {
+	background-color: #0D8BFF;
+}
+
+.timeline::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 1em;
+	width: 0.25em;
+	height: 100%;
+	background: white;
+}
+.timeline-bubble {
+	position: relative;
+	margin: 1em 2em;
+	padding: 0.6em;
+	background: white;
+	border-radius: 0.25em;
+}
+.timeline-bubble::before {
+	content: "";
+	position: absolute;
+	top: 10px;
+	right: 100%;
+	border: 7px solid transparent;
+	border-right: 7px solid white;
+}
+.timeline-bubble * {
+	font-size: 1em;
+	color: black;
+	margin: 0;
+}
+
+.timeline-bubble {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px; /* Set a fixed height for all bubbles */
+}
+
+.timeline-bubble img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+
+@media (min-width: 1000px) and (min-height: 650px) {
+	.timeline::before {
+		left: 10em;
+	}
+	.timeline-bubble {
+		margin-left: 11em;
+		margin-right: 11em;
+	}
+	.timeline-bubble * {
+		font-size: 1.4em;
+	}
+}
+
+.skill {
+	margin: 0px;
+}
+.skill-level-5 {
+	font-size: 6em;
+}
+.skill-level-4 {
+	font-size: 4em;
+}
+.skill-level-3 {
+	font-size: 2em;
+}
+.skill-level-2 {
+	font-size: 1.3em;
+}
+.skill-level-1 {
+	font-size: 1em;
+}
+
+.project {
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+.project p {
+	margin: auto;
+	max-width: 800px;
+}
+
+/* #project-1 {
+	background-image: url("/web/20190121082215im_/http://patrick.mours.net/preview-1.png");
+}
+#project-2 {
+	background-image: url("/web/20190121082215im_/http://patrick.mours.net/preview-2.png");
+}
+#project-5 {
+	background-image: url("/web/20190121082215im_/http://patrick.mours.net/preview-5.png");
+}
+ */
