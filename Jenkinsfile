@@ -1,5 +1,5 @@
 #!groovy​
-     podTemplate(label: 'pod-hugo-app', containers: [
+     podTemplate(label: 'pod-personal-website', containers: [
                     containerTemplate(name: 'hugo', image: 'hugomods/hugo:latest', ttyEnabled: true, command: 'cat'),
                     containerTemplate(name: 'helm', image: 'alpine/helm', ttyEnabled: true, command: 'cat'),
                     containerTemplate(name: 'kaniko', image: 'gcr.io/kaniko-project/executor:debug', imagePullPolicy: 'Always', command: 'sleep', args: '9999999')
