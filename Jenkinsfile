@@ -14,11 +14,11 @@
                 ) 
 {
 
-    node('pod-hugo-app') {
+    node('pod-personal-website') {
 
         def DOCKER_HUB_ACCOUNT = 'aksine'
-        def DOCKER_IMAGE_NAME = 'hugo-app'
-        def K8S_DEPLOYMENT_NAME = 'hugo-app'
+        def DOCKER_IMAGE_NAME = 'personal-website'
+        def K8S_DEPLOYMENT_NAME = 'personal-website'
         def DOCKER_BUILD_CONTEXT = '/home/jenkins/agent/workspace/Hugo' // Specify your desired build context directory
                     
          // Make the workspace writable
@@ -29,7 +29,7 @@
             container('hugo') {
                 stage('Build Hugo Site') {
                     sh ("mkdir -p ./cache")
-                    sh ("hugo  -s ./hugo-app/  -d ../public/ --cacheDir=/home/jenkins/agent/workspace/Hugo/cache")
+                    sh ("hugo  -s ./blog/  -d ../public/ --cacheDir=/home/jenkins/agent/workspace/Hugo/cache")
                 }
             }
     
