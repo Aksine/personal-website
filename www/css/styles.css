@@ -114,50 +114,66 @@ a {
 	background-color: #0D8BFF;
 }
 
-.timeline::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 1em;
-	width: 0.25em;
-	height: 100%;
-	background: white;
-}
-.timeline-bubble {
-	position: relative;
-	margin: 1em 2em;
-	padding: 0.6em;
-	background: white;
-	border-radius: 0.25em;
-}
-.timeline-bubble::before {
-	content: "";
-	position: absolute;
-	top: 10px;
-	right: 100%;
-	border: 7px solid transparent;
-	border-right: 7px solid white;
-}
-.timeline-bubble * {
-	font-size: 1em;
-	color: black;
-	margin: 0;
+
+
+
+
+
+.experience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1em;
+    padding: 1em;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.timeline-bubble {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50px; /* Set a fixed height for all bubbles */
+
+
+.experience-card {
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    padding: 1em;
+    text-align: center;
+    transition: transform 0.3s ease;
 }
 
-.timeline-bubble img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
+.experience-card:hover {
+    transform: translateY(-5px);
+}
+
+.experience-card img {
+    max-width: 150px;
+    max-height: 50px;
     object-fit: contain;
+    margin-bottom: 1em;
 }
+
+.experience-card h3 {
+    font-size: 1.2em;
+    margin-bottom: 0.5em;
+	color: black;
+}
+
+.experience-card p {
+    font-size: 0.9em;
+    margin: 0.2em 0;
+	color: black;
+}
+
+@media (max-width: 768px) {
+    .experience-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 280px) {
+    .experience-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 
 
 @media (min-width: 1000px) and (min-height: 650px) {
@@ -172,6 +188,56 @@ a {
 		font-size: 1.4em;
 	}
 }
+
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5em;
+    padding: 1.5em;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.skill-card {
+    background-color: rgba(255, 255, 255);
+    border-radius: 10px;
+    padding: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.skill-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.skill-card img {
+    max-width: 300px;
+    max-height: 100px;
+    object-fit: contain;
+}
+
+@media (max-width: 768px) {
+    .skills-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+
+
+
+
 
 .skill {
 	margin: 0px;
@@ -202,13 +268,3 @@ a {
 	max-width: 800px;
 }
 
-/* #project-1 {
-	background-image: url("/web/20190121082215im_/http://patrick.mours.net/preview-1.png");
-}
-#project-2 {
-	background-image: url("/web/20190121082215im_/http://patrick.mours.net/preview-2.png");
-}
-#project-5 {
-	background-image: url("/web/20190121082215im_/http://patrick.mours.net/preview-5.png");
-}
- */
