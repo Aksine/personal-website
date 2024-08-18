@@ -29,7 +29,7 @@
             container('hugo') {
                 stage('Build Hugo Site') {
                     sh ("mkdir -p ./cache")
-                    sh ("hugo  -s ./blog/  -d ../public/ --cacheDir=/home/jenkins/agent/workspace/Hugo/cache")
+                    sh ("hugo  -s ./blog/  -d ../public/ ")
                 }
             }
     
