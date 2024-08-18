@@ -31,9 +31,11 @@
 						if (index == 1 || nextIndex == 1)
 							$("#onenav").toggleClass("nav-bottom");
 						if (nextIndex == 2 && direction == "down")
-							$(".timeline-bubble").animate("fadeInRight");
+							$(".experience-card").animate("zoomIn");
+							$(".skill-card").animate("zoomIn");
 						if (nextIndex == 3 && direction == "down")
 							$(".skill").animate("zoomIn");
+						
 					},
 					afterLoad: function (anchorLink, index) {
 						if (index == 4)
@@ -45,7 +47,7 @@
 </link></head>
 <body>
 	<nav class="nav nav-bottom" id="onenav">
-	<a data-menuanchor="about" href="#about">About</a>
+	<a data-menuanchor="about" href="#about">Experience</a>
 	<a data-menuanchor="skills" href="#skills">Skills</a>
 	<a data-menuanchor="projects" href="#projects">Projects</a>
 	<a data-menuanchor="contact" href="#contact">Contact</a>
@@ -130,7 +132,7 @@
 
 
 
-<div class="section" data-anchor="project" id="section-4">
+<div class="section" data-anchor="projects" id="section-4">
 <div class="slide project" id="project-1">
 	
 <a href="https://github.com/Aksine/aus-k3s-manifests">
