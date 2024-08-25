@@ -88,12 +88,23 @@ Once you have identified it, right click on it and click on **'Extract body'** a
 
 #### Compile custom OVMF with Intel GOP/VBT
 
-Once we have the **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** files extracted ,copy them to a Linux environment of your choice that has **Podman** installed, it will be needed for the next step for compiling your own OVMF EFI image.
+Once we have the **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** files extracted. You can either choose to build the OVMF image yourself or with Github actions
+
+##### Building it with GitHub actions
+
+ 1. Fork the repository https://github.com/Aksine/edk2-build-intel-gop
+ 2. Upload both the GOP and VBT files to some service (like https://filebin.net/)
+ 3. Run the workflow and provide the URL of the uploaded files
+ 4. The built OVMF files should be available as an artifact
+
+##### Building it yourself
+
+copy them to a Linux environment of your choice that has **Podman** installed, it will be needed for the next step for compiling your own OVMF EFI image.
 
 Once you have Podman ready ,go ahead and clone the **kethen/edk2-build-intel-gop** repo.
 
 ```
-git clone https://github.com/Kethen/edk2-build-intel-gop
+git clone https://github.com/Aksine/edk2-build-intel-gop
 
 ```
 
