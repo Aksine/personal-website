@@ -9,47 +9,26 @@
 @media (prefers-color-scheme: dark) {
 
     
-    body {
-      background-color: #000000;
-      color: #ffffff;
-    }
   
-    .bg-white {
-      background-color: #1a1a1a !important;
-    }
-  
+    .bg-white,
     .bg-black {
       background-color: #000000 !important;
     }
-    
-
-  
-    a {
-      color: #6ab0f3;
-    }
-  
-    a:hover {
-      color: #8bc4f7;
-    }
-  
-    .moon-gray {
-      color: #9e6060 !important;
-    }
-  
-    .bg-near-white {
-      background-color: #2b2a2a !important;
-    }
+    .bg-near-white,
     .bg-light-gray {
-        background-color: #2b2a2a !important;
-      }
- 
-    * {
-        color: #cccccc; /* Light gray for paragraph text */
-     
-      }
-
-      .avenir,h1,h2,h3,h4,h5{
-        font-family: 'Network Sans' !important;
-        
-      }
+      background-color: rgb(44, 44, 44) !important;
+    }
+    *,
+    .light-silver,
+    .black,
+    .gray,
+    a,
+    a:hover {
+      color: #cccccc;
+    }
+    
+    .avenir,
+    h1, h2, h3, h4, h5 {
+      font-family: 'Network Sans' !important;
+    }
   }

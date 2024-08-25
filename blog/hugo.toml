@@ -3,13 +3,10 @@ languageCode = 'en-us'
 title = "Aksine's thoughts"
 theme = 'ananke'
 
-
+SectionPagesMenu = "main"
 
 [menu]
-[[menu.main]]
-    name = 'Content'
-    pageRef = '/'
-    weight = 10
+
 [[menu.main]]
     name = 'About'
     pageRef = '/about'

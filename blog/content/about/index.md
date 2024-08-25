@@ -1,7 +1,8 @@
 +++
 title = 'About Me'
 date = 2024-08-16T01:54:10Z
-
+[_build]
+list = "never"
 +++
 ## Introduction
 
