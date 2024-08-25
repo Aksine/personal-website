@@ -1,0 +1,2 @@
+{{ $darkModeCSS := resources.Get "css/dark-mode.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $darkModeCSS.RelPermalink }}" integrity="{{ $darkModeCSS.Data.Integrity }}">

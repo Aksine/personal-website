@@ -1,0 +1,55 @@
+/* Dark mode styles */
+@font-face {
+    font-family: 'Network Sans';
+    src: url('/fonts/NETWORKSANS-2019-REGULAR.TTF') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+@media (prefers-color-scheme: dark) {
+
+    
+    body {
+      background-color: #000000;
+      color: #ffffff;
+    }
+  
+    .bg-white {
+      background-color: #1a1a1a !important;
+    }
+  
+    .bg-black {
+      background-color: #000000 !important;
+    }
+    
+
+  
+    a {
+      color: #6ab0f3;
+    }
+  
+    a:hover {
+      color: #8bc4f7;
+    }
+  
+    .moon-gray {
+      color: #9e6060 !important;
+    }
+  
+    .bg-near-white {
+      background-color: #2b2a2a !important;
+    }
+    .bg-light-gray {
+        background-color: #2b2a2a !important;
+      }
+ 
+    * {
+        color: #cccccc; /* Light gray for paragraph text */
+     
+      }
+
+      .avenir,h1,h2,h3,h4,h5{
+        font-family: 'Network Sans' !important;
+        
+      }
+  }

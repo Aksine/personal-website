@@ -99,7 +99,7 @@ Once we have the **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** files extrac
 
 ##### Building it yourself
 
-copy them to a Linux environment of your choice that has **Podman** installed, it will be needed for the next step for compiling your own OVMF EFI image.
+Copy the **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** to a Linux environment of your choice that has **Podman** installed, it will be needed for the next step for compiling your own OVMF EFI image.
 
 Once you have Podman ready ,go ahead and clone the **kethen/edk2-build-intel-gop** repo.
 
@@ -109,6 +109,7 @@ git clone https://github.com/Aksine/edk2-build-intel-gop
 ```
 
 Copy the **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** files into newly created folder named **``gop``** in the cloned repo directory and then build the image
+
 ```
 cd edk2-build-intel-gop
 mkdir gop
