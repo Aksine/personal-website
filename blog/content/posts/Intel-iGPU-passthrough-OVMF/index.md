@@ -1,7 +1,9 @@
 +++
 title = 'Intel iGPU Passthrough for OVMF'
-date = 2023-10-11T01:54:10Z
+date = 2023-10-11
+Lastmod = 2025-01-27
 
+summary = "A guide to Intel iGPU Passthrough on Proxmox/KVM that discusses how to compile your own vBIOS and setup your VM"
 +++
 
 
@@ -9,40 +11,57 @@ date = 2023-10-11T01:54:10Z
 
 # Why passthrough an Integrated GPU? 
 
-Why pass an iGPU to a VM ? Because i wanted to , duh... 
+Why pass an iGPU to a VM ? Because i thought i would it be fun to do so !
 
-Well in my particular case, i wanted to use the integrated Display/Laptop Displays the outputs for my VM and because i wanted to use all the available screen real estate possible ,while running a headless hypervisor underneath -Proxmox in this case.
+Well, my actual use case is: 
 
+I had multiple laptops as part of my Proxmox Cluster. Normally the iGPU framebuffer would just output the Proxmox Console and i thought that was a waste of the display.
+By passing the iGPU to a VM, we can put these integrated displays to better use.
+
+I've had multiple attempts at doing Intel iGPU passthrough over the years and i've gotten significantly better/consistent at it. That's why i decided to write this guide as reference for myself and for others to use it.
+
+
+# Overview
+
+The guide outlines two main parts for setting up Intel iGPU passthrough on Proxmox/KVM:
+
+**1. File Preparation and OVMF Compilation:**
+
+  1.  Extract required Intel GOP driver and VBT files from BIOS/firmware
+  2. Compile custom OVMF image with these files (via GitHub Actions or manual build)
+
+**2. System and VM Configuration:**
+  1. Set up host system for PCI passthrough for the iGPU
+  2. Configure the Proxmox VM and QEMU arguments settings for either Q35 or i440fx machine types
 
 # Prerequisites
 
 This guide is mostly for Proxmox users and assumes that you have the following other requirements as well:
 
-- Intel iGPUs on CPUs from Haswell to CometLake should work this (i've tested with Haswell,Broadwell).
-- Proxmox 7.X (I assume Proxmox 8.X should work ,but i have not tested it myself).
-- Access to your UEFI firmware blobs/updates .
-- For the guest operating systems, i've tested Windows 10 and Windows 11.
-- A linux environment with Podman where you can compile a OVMF image.
+### Hardware & Software 
+- Intel iGPUs on CPUs from Haswell to CometLake should be supported with this method (i've tested with Haswell,Broadwell,Skylake and Coffeelake)
+- Intel VT-d being enabled in your UEFI/BIOS settings
+- Proxmox 8.X booted in UEFI/CSM mode (Legacy boot will not work)
+- For the guest operating systems, i've tested Windows 10 and Windows 11
+
+
+###  Retrieving GOP and VBT files (needed custom OVMF image)
+- Access to your UEFI firmware blobs/updates from your manufacturer.
+
+  **OR**
+- Download "IntelGopDriver.efi" and "Vbt.bin" based on the architecture of your CPU it from here: https://winraid.level1techs.com/t/efi-lan-bios-intel-gopdriver-modules/33948/2
+
+### Compiling the custom OVMF image
+
+- A Linux environment with Podman setup
+
+  **OR** 
+- A github account with which you can use the GitHub actions method that i setup.
+
 
 # Guide
 
-There will be two parts to the guide, the first is preparing the necessary files ,then compiling your own version of OVMF with the Intel GOP (Graphics Output Protocol) driver and VBT (Video BIOS Tables) files. 
-
-The second part describes setting up Proxmox and the virtual machine configuration files and setting intel iGPU direct passthrough or GVT-D
-
-## vBios ROM override
-
-### Q35 virtual machines
-For q35 virtual machines download the following vBIOS rom override https://github.com/patmagauran/i915ovmfPkg/releases/tag/V0.2.1. 
-
-I have also had success compiling it myself and will link my compiled here if you want to skip the hassle of doing it: [i915ovmf.rom](i915ovmf.rom). 
-
-Otherwise feel free to compile it yourself from the repository linked, i will not discuss this in the guide as it is not that critical.
- 
-### i440fx virtual machines
-For i440fx virtual machines ,download the following file from : [vbios_gvt_uefi.rom](https://web.archive.org/web/20201020144354/http://120.25.59.132:3000/vbios_gvt_uefi.rom) 
-
-## Extract files and compile OVMF
+## 1. File Preparation and OVMF Compilation
 
 You can either choose to extract the files yourself from the BIOS files 
 
@@ -52,14 +71,15 @@ You can download **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** based on the
 
 If you download it, you can skip the extraction steps and proceed to compiling your custom OVMF files. 
 
-### Extracting IntelGopDriver.efi and Vbt.bin from your bios:
+
+### 1.1 Extracting IntelGopDriver.efi and Vbt.bin from your UEFI/BIOS firmware files/update:
 
 Download this tool as we are going to need this to extract the necessary files from here: https://github.com/LongSoft/UEFITool
 
 
-Then download your BIOS/Firmware update files from your motherboard/OEM manufacturer. Quite often these are installer setups that can be extracted or zip file that contain a .efi or .bin file or named something else.
+Then download your UEFI/BIOS Firmware update files from your motherboard/OEM manufacturer. Quite often these are installer setups that can be extracted or zip file that contain a .efi or .bin file or named something else.
 
-After scouring the interwebs, i found some BIOS/Firmware update files for my Clevo NP850EP6  and here's what a valid file i choose looks like for example.
+After scouring the interwebs, i found some UEFI/BIOS Firmware update files for my Clevo NP850EP6 and here's what a valid file i choose looks like for example.
 
 ![UEFITool_VALID](UEFITool_VALID.png)
 
@@ -86,7 +106,7 @@ Some pointers to search for it is to try non unicode text searching **``$VBT``**
 
 Once you have identified it, right click on it and click on **'Extract body'** and name it **``"Vbt.bin"``**
 
-#### Compile custom OVMF with Intel GOP/VBT
+## 1.2 Compiling custom OVMF with Intel GOP/VBT
 
 Once we have the **``"IntelGopDriver.efi"``** and **``"Vbt.bin"``** files extracted. You can either choose to build the OVMF image yourself or with Github actions
 
@@ -122,19 +142,44 @@ Build the image with the following command
 bash build_ovmf.sh
 ```
 
-The built OVMF files can be found in **``edk2/Build/OvmfX64/DEBUG_GCC5/FV/``** directory,the files you are searching for are **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``**. Copy these files to your Proxmox host.
+The built OVMF files can be found in **``edk2/Build/OvmfX64/DEBUG_GCC5/FV/``** directory. The important files you are searching for are **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``**. Copy these files to your Proxmox host.
 
-### Enabling IOMMU in Linux and Blacklisting PCI and Kernel modules
 
-Get the PCI Vendor/Device ids to be blacklisted with ``lspci``. Usually in my experience Intel iGPUs are always located at ``00:02.0``
+
+
+## 2. System and VM Configuration
+
+
+## 2.2 Set up host system for PCI passthrough for the iGPU
+
+
+Since we are going to passthrough the Intel iGPU to a virtual machine, we need to make sure:
+
+- IOMMU is enabled on the host.
+- The Intel iGPU is completely isolated from the host by :
+  - Blacklisting the "``i915``" drivers from loading
+  - Preventing Linux's simplefb framebuffer from loading for the iGPU
+  - Binding the iGPU to the "``vfio-pci``" module
+
+### Identifying PCI id of Intel iGPU
+
+Now we try and identify th PCI Vendor/Device ids of the Intel iGPU to be blacklisted with ``lspci``. 
+
+Usually in my experience Intel iGPUs are always located at the address ``00:02.0``
+
+For example, running ``lspci`` at the address ``00:02.0`` with ``-n`` and ``-s`` flags:
 ```
 lspci -n -s 00:02.0
+
 ```
-For example 
-> ``00:02.0 0300: 8086:3e9b``
+Gives us:
+```
+00:02.0 0300: 8086:3e9b
+```
 
 **``8086:3e9b``** is the PCI id that we need and then we add to the cmdline in the following steps
 
+### Blacklisting the Intel iGPU drivers and binding the iGPU to ''vfio-pci'' module
 
 
 Edit the kernel cmdline at:
@@ -178,53 +223,100 @@ vfio_virqfd
 
 ### Enable I/O interrupt remapping and ignore MSRs
 
-Run the following the commands to enable allow I/O interrupt remapping and ignore MSRs
+Run the following the commands to enable allow I/O interrupt remapping and ignore MSRs (Model Specific Registers)
 
 ```
 echo "options vfio_iommu_type1 allow_unsafe_interrupts=1" > /etc/modprobe.d/iommu_unsafe_interrupts.conf
 echo "options kvm ignore_msrs=1" > /etc/modprobe.d/kvm.conf
 ```
 
-
+Both settings are commonly used to improve VM compatibility, i am not fully aware of the security implications of this, but you should be fine, after all, nobody is passing through Intel iGPU's in production environments.
 
 
 ### Update initramfs and reboot
 
-And finally apply all the above changes by updating the initramfs and rebooting for the changes to take effect
+And finally apply all the above changes by updating the initramfs 
+
 ```
 update-initramfs -u
 ```
 
+And reboot to load all these changes.
+
+```
+reboot
+```
+
+After the reboot, you can then continue to access the machine via the Proxmox Web UI or SSH.
+
+You can verify that kernel cmdline was changed by running 
+```
+cat /proc/cmdline
+```
+
+The output should be something like this
+```
+
+BOOT_IMAGE=/boot/vmlinuz-6.8.12-6-pve root=/dev/mapper/pve-root ro quiet intel_iommu=on iommu=pt initcall_blacklist=sysfb_init vfio-pci.ids=8086:3e9b modprobe.blacklist=i915 modprobe.blacklist=snd_hda_codec_hdmi modprobe.blacklist=snd_hda_intel 
+```
+
+
+
 ## Proxmox Virtual machine configuration
 
 
+There are two approaches for configuring Intel iGPU passthrough in Proxmox VMs: using Q35 or i440fx machine types. Each requires different settings and ROM files. I've found more success with i440fx machines , but both methods are documented below. 
+ 
 
-### For Q35 virtual machines
+
+## Q35 virtual machines
+
+#### vBios ROM override **``i915ovmf.rom``**
 
 
-Assuming you have moved the **``i915ovmf.rom``** to **``/usr/share/kvm``**  Then **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``** to a folder at **``/root/OVMF``**
+For Q35 virtual machines download the following vBIOS rom override https://github.com/patmagauran/i915ovmfPkg/releases/tag/V0.2.1.
 
-Set your BIOS type in your Proxmox VM configuration to be SeaBIOS in order to prevent a conflict with custom arguments we set below 
 
-And then set your display type to none in your Proxmox VM configuration as well.
+I have also had success compiling it myself and will link my compiled here if you want to skip the hassle of doing it: [i915ovmf.rom](i915ovmf.rom). 
+
+Otherwise feel free to compile it yourself from the repository that i linked, I will not discuss this in the guide as it is not that critical.
+
+#### VM Configuration
+
+Assuming you have moved:
+- The  **``i915ovmf.rom``** located at **``/usr/share/kvm/``**  
+- The compiled **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``** to a  folder located at **```/root/OVMF/```**
+
+For the VM configuration:
+- Set your BIOS type in your Proxmox VM configuration to be SeaBIOS in order to prevent a conflict with custom arguments we set below 
+- Set your display type to none 
+- Set your machine type to Q35
+- Set your CPU type to host
+- Disable the Ballooning device
+- OS Type to Microsoft Windows and Version 11 
 
 
 Add the following lines to your Proxmox VM configuration located at **``/etc/pve/qemu-server/<VMID.conf>``** where VMID is the VM id of your Proxmox virtual machine
 
 ```
-args: -device vfio-pci,host=00:02.0,bus=pci.0,addr=0x2,x-igd-opregion=on,x-igd-gms=1,romfile=i915ovmf.rom  -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/OVMF/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/bios/OVMF/OVMF_VARS.fd'
+args: -set device.hostpci0.addr=02.0 -set device.hostpci0.x-igd-gms=6 -set device.hostpci0.x-igd-opregion=on   -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/OVMF/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/OVMF/OVMF_VARS.fd'
+
+```
+
+```
+hostpci0: 0000:00:02,romfile=i915ovmf.rom
 ```
 
 
-
-This is what  a sample Proxmox configuration could look like
+This is what  a sample Proxmox VM configuration could look like
 ```
-args: -device vfio-pci,host=00:02.0,bus=pci.0,addr=0x2,x-igd-opregion=on,x-igd-gms=1,romfile=i915ovmf.rom  -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/bios/OVMFintelGOP/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/bios/OVMFintelGOP/OVMF_VARS.fd' 
+args: -set device.hostpci0.addr=02.0 -set device.hostpci0.x-igd-gms=6 -set device.hostpci0.x-igd-opregion=on   -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/OVMF/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/OVMF/OVMF_VARS.fd'
 balloon: 0
 bios: seabios
 boot: order=virtio0;net0
 cores: 4
 cpu: host
+hostpci0: 0000:00:02,romfile=i915ovmf.rom
 localtime: 0
 machine: pc-q35-7.2
 memory: 8192
@@ -240,22 +332,44 @@ virtio0: cephrbd-aus:vm-109-disk-0,cache=unsafe,iothread=1,size=32G
 
 ```
 
-### For i440fx virtual machines
+## i440fx virtual machines
 
+#### vBios ROM override **vbios.gvt_uefi.rom**
 
-Assuming you have moved the **``vbios_gvt_uefi.rom``** to **``/usr/share/kvm``**  Then from the custom compiled OVMF ,the files **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``** to a folder at **``/root/OVMF``**
+For i440fx virtual machines ,download the following file from : [vbios_gvt_uefi.rom](https://web.archive.org/web/20201020144354/http://120.25.59.132:3000/vbios_gvt_uefi.rom) 
+
+#### VM Configuration
+
+Assuming you have moved:
+
+- The **``vbios_gvt_uefi.rom``**  to  **``/usr/share/kvm``**  
+- The compiled **``OVMF_CODE.fd``** and **``OVMF_VAR.fd``** to a  folder located at **```/root/OVMF/```**
+
+For the VM configuration:
+- Set your BIOS type in your Proxmox VM configuration to be SeaBIOS in order to prevent a conflict with custom arguments we set below 
+- Set your display type to none 
+- Set your CPU type to host
+- Disable the Ballooning device
+- OS Type to Microsoft Windows  and Version 11 
+
 
 Add the following lines to your Proxmox VM configuration located at **``/etc/pve/qemu-server/<VMID.conf>``** where VMID is the VM id of your Proxmox virtual machine
 
 
 ```
-args: -device vfio-pci,host=00:02.0,bus=pci.0,addr=0x2,x-igd-opregion=on,x-igd-gms=1,romfile=vbios_gvt_uefi.rom -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/bios/OVMFintelGOP/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/bios/OVMFintelGOP/OVMF_VARS.fd' 
+args: -set device.hostpci0.addr=02.0 -set device.hostpci0.x-igd-gms=6 -set device.hostpci0.x-igd-opregion=on -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/OVMF/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/OVMF/OVMF_VARS.fd' 
 ```
+
+```
+hostpci0: 0000:00:02,legacy-igd=1,romfile=vbios_gvt_uefi.rom
+```
+
+
 This is what  a sample Proxmox configuration could look like
 
 
 ```
-args: -device vfio-pci,host=00:02.0,bus=pci.0,addr=0x2,x-igd-opregion=on,x-igd-gms=1,romfile=vbios_gvt_uefi.rom -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/bios/OVMFintelGOP/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/bios/OVMFintelGOP/OVMF_VARS.fd' 
+args: -set device.hostpci0.addr=02.0 -set device.hostpci0.x-igd-gms=6 -set device.hostpci0.x-igd-opregion=on -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/OVMF/OVMF_CODE.fd' -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/OVMF/OVMF_VARS.fd'
 balloon: 0
 bios: seabios
 boot: order=virtio0;ide2
@@ -263,6 +377,7 @@ cores: 4
 cpu: host
 ide2: none,media=cdrom
 localtime: 0
+hostpci0: 0000:00:02,legacy-igd=1,romfile=vbios_gvt_uefi.rom
 machine: pc-i440fx-7.2
 memory: 2048
 meta: creation-qemu=7.2.0,ctime=1689492646
@@ -276,74 +391,140 @@ tablet: 0
 vga: none
 virtio0: local-lvm:vm-120-disk-0,cache=unsafe,iothread=1,size=32G
 ```
-### Additional step for i440fx virtual machines 
-
-Edit /usr/share/perl5/PVE/QemuServer.pm  and add this line
-
-``` 
-$bridges->{2} = 1 if $vmid != [VMID ]; 
-
-```
-
-Where VMID is the VMID of your virtual machine ,so for example my VMID of iGPU virtual machine is 140.
-
-You will the find the block at line 4130 and here is an example modification
-
-```
-    if (!$q35) {
-        # add pci bridges
-        if (min_version($machine_version, 2, 3)) {
-           $bridges->{1} = 1;
-           #$bridges->{2} = 1;  disabled
-           $bridges->{2} = 1 if $vmid != 140;       #Legacy IGD passthrough fix
-        }
-
-        $bridges->{3} = 1 if $scsihw =~ m/^virtio-scsi-single/;
-
-    }
-```
-
-
-Now just refresh the change by running the following
-```
-pvedaemon restart
-```
 
 
 
+### Explanation of the 'args' line and 'hostpci0' lines 
+
+Here's an explanation of the 'args' line  QEMU arguments and and 'hostpci0' lines  used in the Proxmox configurations:
+
+`args:` line components:
+- `-set device.hostpci0.addr=02.0`: Sets the PCI device address to match physical hardware (02.0)
+
+- `-set device.hostpci0.x-igd-gms=6`: This argument specifies sets a value multiplied by 32 as the amount of pre-allocated memory (in units of MB) to support IGD in VGA modes
+
+- `-set device.hostpci0.x-igd-opregion=on`: It exposes opregion (VBT included) to guest driver so that the guest driver could parse display connector information from. This property is mandatory for the Windows VM to enable display output.
+
+- `-drive if=pflash...`:  This argument is how we passthrough the custom compiled OVMF image that we compiled ourselves for iGPU passthrough 
+
+`hostpci0:` line components:
+- For Q35: 
+  ```
+  0000:00:02,romfile=i915ovmf.rom
+  ```
+  Passthrough the iGPU at PCI address 00:2.0 on PCI Bus 0 at Device 2 (just matching what a physical machine sees  ) and custom ROM file
+
+- For i440fx:
+  ``` 
+  0000:00:02,legacy-igd=1,romfile=vbios_gvt_uefi.rom
+  ```
+  Passthrough the iGPU at PCI address 00:2.0 on PCI Bus 0 at Device 2 (just matching what a physical machine sees),the custom ROM file and adds legacy IGD mode for compatibility
 
 
 
-
-
-### Explanation of the QEMU arguments used
-
-
-A little explanation for QEMU arguments 
-
-
-- `-device vfio-pci,host=00:02.0,bus=pci.0,addr=0x2` Passthrough the iGPU at PCI address 00:2.0 on PCI Bus 0 at Device 2 (just matching what a physical machine sees  )
-- `x-igd-opregion=on` It exposes opregion (VBT included) to guest driver so that the guest driver could parse display connector information from. This property is mandatory for the Windows VM to enable display output.
-- `x-igd-gms=1` This argument specifies sets a value multiplied by 32 as the amount of pre-allocated memory (in units of MB) to support IGD in VGA modes
-- `romfile=i915ovmf.rom` Specifies a ROM file for the device, in this case we are using the i915ovmf.rom or vbios_gvt_uefi.rom that we accquired earlier.
-
-- `-drive 'if=pflash,unit=0,format ..... F/OVMF_VARS.fd' `  This argument is how we passthrough the custom compiled OVMF image that we compiled ourselves for iGPU passthrough 
 
 ## Configuration complete
 
 That's about the configuration you should need for iGPU passthrough in Proxmox.
 
-
 When you boot your machine ,you should be greeted with the Tiano-core boot screen if you followed all the steps and everything worked out alright.
 
 Feel free to install intel drivers once you have working passthrough.
 
-I've had success with Haswell,Broadwell,Skylake,Coffeelake iGPUs
+
 
 ### Other notes
 Broadwell also has issues with kernels newer than 5.3 ,so downgrade the kernel.You’ll see `Disabling IOMMU for graphics on this chipset` in the dmesg, and the integrated GPU will not be visible for passthrough.
 
 [https://github.com/torvalds/linux/commit/1f76249cc3bebd6642cb641a22fc2f302707bfbb](https://github.com/torvalds/linux/commit/1f76249cc3bebd6642cb641a22fc2f302707bfbb)
+
+I had to compile a custom kernel with this flag being disabled
+
+### Misc Raw QEMU configs
+
+These are the raw QEMU arguments that you get with ``qm showcmd <vmid> --pretty``
+
+#### Q35
+
+```
+/usr/bin/kvm \
+  -id 109 \
+  -name 'q35-iGPU,debug-threads=on' \
+  -no-shutdown \
+  -chardev 'socket,id=qmp,path=/var/run/qemu-server/109.qmp,server=on,wait=off' \
+  -mon 'chardev=qmp,mode=control' \
+  -chardev 'socket,id=qmp-event,path=/var/run/qmeventd.sock,reconnect=5' \
+  -mon 'chardev=qmp-event,mode=control' \
+  -pidfile /var/run/qemu-server/109.pid \
+  -daemonize \
+  -smp '4,sockets=1,cores=4,maxcpus=4' \
+  -nodefaults \
+  -boot 'menu=on,strict=on,reboot-timeout=1000,splash=/usr/share/qemu-server/bootsplash.jpg' \
+  -vga none \
+  -nographic \
+  -cpu 'host,hv_ipi,hv_relaxed,hv_reset,hv_runtime,hv_spinlocks=0x1fff,hv_stimer,hv_synic,hv_time,hv_vapic,hv_vpindex,+kvm_pv_eoi,+kvm_pv_unhalt' \
+  -m 8192 \
+  -object 'iothread,id=iothread-virtio0' \
+  -readconfig /usr/share/qemu-server/pve-q35-4.0.cfg \
+  -device 'vfio-pci,host=0000:00:02.0,id=hostpci0.0,bus=pci.0,addr=0x10.0,multifunction=on,romfile=/usr/share/kvm/i915ovmf.rom' \
+  -device 'vfio-pci,host=0000:00:02.1,id=hostpci0.1,bus=pci.0,addr=0x10.1' \
+  -iscsi 'initiator-name=iqn.1993-08.org.debian:01:c82db5c5372' \
+  -drive 'file=/dev/rbd-pve/2e4a3e28-4d59-45d4-8705-4b322a4b953c/cephrbd-aus/vm-109-disk-0,if=none,id=drive-virtio0,cache=unsafe,format=raw,aio=threads,detect-zeroes=on' \
+  -device 'virtio-blk-pci,drive=drive-virtio0,id=virtio0,bus=pci.0,addr=0xa,iothread=iothread-virtio0,bootindex=100' \
+  -netdev 'type=tap,id=net0,ifname=tap109i0,script=/var/lib/qemu-server/pve-bridge,downscript=/var/lib/qemu-server/pve-bridgedown,vhost=on' \
+  -device 'virtio-net-pci,mac=8E:A6:82:97:9C:C1,netdev=net0,bus=pci.0,addr=0x12,id=net0,rx_queue_size=1024,tx_queue_size=256,bootindex=101' \
+  -rtc 'driftfix=slew' \
+  -machine 'hpet=off,smm=off,type=pc-q35-7.2+pve0' \
+  -global 'kvm-pit.lost_tick_policy=discard' \
+  -set 'device.hostpci0.addr=02.0' \
+  -set 'device.hostpci0.x-igd-gms=6' \
+  -set 'device.hostpci0.x-igd-opregion=on' \
+  -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/OVMF/OVMF_CODE.fd' \
+  -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/OVMF/OVMF_VARS.fd'
+```
+#### i440fx
+
+```
+/usr/bin/kvm \
+  -id 120 \
+  -name 'i440fx-iGPU,debug-threads=on' \
+  -no-shutdown \
+  -chardev 'socket,id=qmp,path=/var/run/qemu-server/120.qmp,server=on,wait=off' \
+  -mon 'chardev=qmp,mode=control' \
+  -chardev 'socket,id=qmp-event,path=/var/run/qmeventd.sock,reconnect=5' \
+  -mon 'chardev=qmp-event,mode=control' \
+  -pidfile /var/run/qemu-server/120.pid \
+  -daemonize \
+  -smp '4,sockets=1,cores=4,maxcpus=4' \
+  -nodefaults \
+  -boot 'menu=on,strict=on,reboot-timeout=1000,splash=/usr/share/qemu-server/bootsplash.jpg' \
+  -vga none \
+  -nographic \
+  -cpu 'host,hv_ipi,hv_relaxed,hv_reset,hv_runtime,hv_spinlocks=0x1fff,hv_stimer,hv_synic,hv_time,hv_vapic,hv_vpindex,+kvm_pv_eoi,+kvm_pv_unhalt' \
+  -m 2048 \
+  -object 'iothread,id=iothread-virtio0' \
+  -device 'pci-bridge,id=pci.1,chassis_nr=1,bus=pci.0,addr=0x1e' \
+  -device 'pci-bridge,id=pci.2,chassis_nr=2,bus=pci.1,addr=0x1e' \
+  -device 'pci-bridge,id=pci.3,chassis_nr=3,bus=pci.0,addr=0x5' \
+  -device 'piix3-usb-uhci,id=uhci,bus=pci.0,addr=0x1.0x2' \
+  -device 'vfio-pci,host=0000:00:02.0,id=hostpci0,bus=pci.0,addr=0x2,romfile=/usr/share/kvm/vbios_gvt_uefi.rom' \
+  -iscsi 'initiator-name=iqn.1993-08.org.debian:01:df5db57462c8' \
+  -drive 'if=none,id=drive-ide2,media=cdrom,aio=io_uring' \
+  -device 'ide-cd,bus=ide.1,unit=0,drive=drive-ide2,id=ide2,bootindex=101' \
+  -drive 'file=/dev/pve/vm-120-disk-0,if=none,id=drive-virtio0,cache=unsafe,format=raw,aio=io_uring,detect-zeroes=on' \
+  -device 'virtio-blk-pci,drive=drive-virtio0,id=virtio0,bus=pci.0,addr=0xa,iothread=iothread-virtio0,bootindex=100' \
+  -netdev 'type=tap,id=net0,ifname=tap120i0,script=/var/lib/qemu-server/pve-bridge,downscript=/var/lib/qemu-server/pve-bridgedown,vhost=on' \
+  -device 'virtio-net-pci,mac=36:26:74:C2:9A:72,netdev=net0,bus=pci.0,addr=0x12,id=net0,rx_queue_size=1024,tx_queue_size=256' \
+  -rtc 'driftfix=slew' \
+  -machine 'hpet=off,smm=off,type=pc-i440fx-7.2+pve0' \
+  -global 'kvm-pit.lost_tick_policy=discard' \
+  -set 'device.hostpci0.addr=02.0' \
+  -set 'device.hostpci0.x-igd-gms=6' \
+  -set 'device.hostpci0.x-igd-opregion=on' \
+  -drive 'if=pflash,unit=0,format=raw,readonly,file=/root/OVMF/OVMF_CODE.fd' \
+  -drive 'if=pflash,unit=1,format=raw,id=drive-efidisk0,file=/root/OVMF/OVMF_VARS.fd'
+
+```
 
 ### Misc Libvirt config
 
@@ -585,7 +766,19 @@ Here is a sample libvirt config provided by _shadow1_x
 </domain>
 ```
 
-## References and credits
+
+# Updates
+
+### January 2025
+- Updated for Proxmox 8.X and clarified UEFI/CSM boot requirement
+- Added GitHub Actions method for building OVMF
+- Changed QEMU args syntax to use `-set device.hostpci0` format and removed QemuServer.pm modification for i440fx machines (no longer needed)
+- Added verification steps for kernel cmdline changes
+
+
+
+
+# References and credits
 
 _shadow1_x from the VFIO Discord for helping me getting the q35 virtual machine working and his sample Libvirt configuration
 
@@ -595,7 +788,7 @@ https://github.com/patmagauran/i915ovmfPkg/wiki
 
 https://forum.proxmox.com/threads/igd-passthrough-and-hard-coded-pci-bridges.68285/
 
-
+https://github.com/cmd2001/build-edk2-gvtd?tab=readme-ov-file#key-changes-in-vm-config
 
 https://wiki.archlinux.org/title/Intel_GVT-g
 

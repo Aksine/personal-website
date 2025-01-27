@@ -1,9 +1,15 @@
 baseURL = 'https://blog.aksine-am.com/'
 languageCode = 'en-us'
-title = "Aksine's thoughts"
+
 theme = 'ananke'
 
 SectionPagesMenu = "main"
+
+[languages]
+[languages.en]
+title = "Aksine's thoughts"
+weight = 1
+contentDir = "content"
 
 [menu]
 
@@ -11,8 +17,11 @@ SectionPagesMenu = "main"
     name = 'About'
     pageRef = '/about'
     weight = 20
+[params]
 
-
+  date_format = "January 2, 2006"
+  showLastmod = true
+  enableGitInfo = true
 [[params.ananke_socials]]
   name = "github"
   url = "https://github.com/Aksine"
@@ -21,3 +30,7 @@ SectionPagesMenu = "main"
   name = "linkedin"
   url = "https://www.linkedin.com/in/arnold-miranda-74bb3813b/"
 
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
