@@ -27,9 +27,9 @@ html, body {
 
 
 h1 {
-	font-size: 4em;
+	font-size: 3em;
 	font-weight: 400;
-	font-family: "Cutive Mono";
+	font-family: "Courier New";
 }
 @media (max-width: 1000px) {
 	h1 {
@@ -67,6 +67,11 @@ a {
 	padding-left: 1em;
 	padding-right: 1em;
 }
+
+
+
+
+
 
 /* Navigation */
 
