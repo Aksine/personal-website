@@ -43,13 +43,17 @@
             container('helm') {
                 stage('Install on Doha cluster') {
               
-                   
+                        sh "helm uninstall personal-website --kube-context doh || true"
                         sh ("helm repo add bjw-s-charts https://bjw-s-labs.github.io/helm-charts/")
-                        sh "helm upgrade personal-website bjw-s-charts/app-template -i -f Helm.yml --version 3.7.3 --kube-context doh --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
-                 
+                        sh "helm instal personal-website bjw-s-charts/app-template -i -f Helm.yml --version 3.7.3 --kube-context doh --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
+
+                      
+    
+    }
                     }
                 stage('Install on Aus cluster') {
-                   
+
+                        sh "helm uninstall personal-website --kube-context aus || true"
                         sh ("helm repo add bjw-s-charts https://bjw-s-labs.github.io/helm-charts/")
                         sh "helm upgrade personal-website bjw-s-charts/app-template  -i -f Helm.yml --version 3.7.3 --kube-context aus --set-string controllers.main.containers.main.image.tag=${env.BUILD_NUMBER}"
                  
